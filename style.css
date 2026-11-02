@@ -1,0 +1,1054 @@
+/*
+  style.css — 9Router Scanner Web UI
+  Theme: Dark Technical / Developer CLI Hybrid Minimalist
+  Palette, typography, and spacing per DESIGN.md
+  Anti-slop compliance: no decorative gradients, no pill shapes, no floating animations,
+  monospace for code/log output, sans-serif for UI labels.
+
+  Decision log (R-31):
+  - Dark base (#0d1117): developer tool, terminal aesthetic, legitimate for this product (R-21)
+  - Monospace for log lines: log output IS code — functional, not decorative (R-06)
+  - System sans-serif for UI: maximum readability for form labels and controls
+  - Border-radius 4px for inputs/buttons, 6px for panels: consistent, not pill-shaped (R-11)
+  - Accent color (#3fb950) used only for success states and the start-scan CTA — one deliberate accent (R-13)
+  - No box shadows for decoration; used only on focused inputs for elevation (R-12)
+  - Transitions: 120ms max, hover states only — no scroll-reveal, no floating (R-19/MOTION 1)
+  - No gradients — CLI tools use flat color (R-01)
+*/
+
+/* ═══════════════════════════
+   Custom Properties (Design Tokens)
+═══════════════════════════ */
+:root {
+  /* Color palette */
+  --bg:            #0d1117;
+  --surface:       #161b22;
+  --surface-raised:#1c2330;
+  --border:        #30363d;
+  --border-subtle: #21262d;
+
+  /* Text */
+  --text-primary:  #f0f6fc;
+  --text-muted:    #8b949e;
+  --text-faint:    #484f58;
+
+  /* Semantic colors */
+  --accent:        #3fb950;   /* terminal green — success, active, start */
+  --warning:       #d29922;   /* amber — circuit breaker, skipped */
+  --error:         #f85149;   /* coral red — failed, abort */
+  --brand:         #58a6ff;   /* electric blue — links, brand highlights */
+
+  /* Typography */
+  --font-ui:       -apple-system, "Segoe UI", system-ui, sans-serif;
+  --font-mono:     "JetBrains Mono", "Fira Code", "Consolas", ui-monospace, monospace;
+
+  /* Sizing */
+  --radius-sm:     4px;
+  --radius-md:     6px;
+  --radius-lg:     8px;
+
+  /* Spacing scale */
+  --sp-1:  4px;
+  --sp-2:  8px;
+  --sp-3:  12px;
+  --sp-4:  16px;
+  --sp-5:  20px;
+  --sp-6:  24px;
+  --sp-8:  32px;
+  --sp-10: 40px;
+
+  /* Transition */
+  --trans-fast: 120ms ease;
+
+  /* Layout */
+  --max-width: 1280px;
+  --header-height: 64px;
+}
+
+/* ═══════════════════════════
+   Reset & Base
+═══════════════════════════ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Accessible focus — never remove outline without replacement (R-32) */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Cursor affordances (R-39) */
+button,
+[role="button"],
+[role="switch"],
+label[for],
+label:has(input) {
+  cursor: pointer;
+}
+
+input[type="checkbox"],
+input[type="number"],
+input[type="url"],
+input[type="password"],
+input[type="text"] {
+  cursor: text;
+}
+
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+/* ═══════════════════════════
+   Typography
+═══════════════════════════ */
+h1, h2, h3 {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text-primary);
+}
+
+code, pre, .mono {
+  font-family: var(--font-mono);
+}
+
+/* ═══════════════════════════
+   Layout Shell
+═══════════════════════════ */
+#main-content {
+  flex: 1;
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: var(--sp-6) var(--sp-4);
+  display: grid;
+  gap: var(--sp-5);
+}
+
+/* ═══════════════════════════
+   Site Header
+═══════════════════════════ */
+.site-header {
+  background-color: var(--surface);
+  border-bottom: 1px solid var(--border);
+  min-height: var(--header-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px var(--sp-6);
+  gap: var(--sp-4);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-shrink: 0;
+}
+
+.brand-sigil {
+  color: var(--accent);
+  font-size: 12px;
+  font-family: var(--font-mono);
+  line-height: 1;
+}
+
+.brand-title {
+  font-size: 15px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+.brand-subtitle {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  background-color: var(--border-subtle);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.header-config {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex: 1;
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+}
+
+/* ═══════════════════════════
+   Form Fields
+═══════════════════════════ */
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 160px;
+}
+
+.field-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.text-input {
+  background-color: var(--bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-1) var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  height: 30px;
+  width: 100%;
+  transition: border-color var(--trans-fast);
+  cursor: text;
+}
+
+.text-input:hover {
+  border-color: var(--text-muted);
+}
+
+.text-input:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.15);
+}
+
+.text-input--number {
+  width: 80px;
+  font-family: var(--font-mono);
+}
+
+/* Remove browser number input spinners for cleaner look */
+.text-input--number::-webkit-outer-spin-button,
+.text-input--number::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+.text-input--number { -moz-appearance: textfield; }
+
+.field-hint {
+  font-size: 11px;
+  color: var(--text-faint);
+  line-height: 1.4;
+}
+
+/* In the appbar, hints would break vertical rhythm — visually clip them
+   while keeping the text in the DOM for aria-describedby screen readers.
+   The sr-only pattern: zero layout footprint, still announced by screen readers. */
+.site-header .field-group {
+  position: relative;
+}
+
+.site-header .field-hint {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Masked input wrapper */
+.input-masked-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background-color: var(--bg);
+  transition: border-color var(--trans-fast);
+}
+
+.input-masked-wrap:focus-within {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.15);
+}
+
+.input-masked-wrap .text-input {
+  border: none;
+  flex: 1;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.input-masked-wrap .text-input:focus {
+  border: none;
+  box-shadow: none;
+  outline: none;
+}
+
+/* ═══════════════════════════
+   Icon Button
+═══════════════════════════ */
+.btn-icon {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--sp-2);
+  height: 30px;
+  width: 30px;
+  flex-shrink: 0;
+  border-left: 1px solid var(--border);
+  transition: color var(--trans-fast);
+}
+
+.btn-icon:hover {
+  color: var(--text-primary);
+}
+
+.btn-icon:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: -2px;
+}
+
+/* ═══════════════════════════
+   Status Pills (Header)
+═══════════════════════════ */
+.header-status {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.status-pill {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--text-faint);
+  flex-shrink: 0;
+  transition: background-color var(--trans-fast);
+}
+
+.status-label {
+  color: var(--text-muted);
+}
+
+.status-value {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Status state modifiers — applied via JS */
+.status-pill.is-ok .status-dot    { background-color: var(--accent); }
+.status-pill.is-err .status-dot   { background-color: var(--error); }
+.status-pill.is-warn .status-dot  { background-color: var(--warning); }
+
+.status-pill.is-ok  .status-value { color: var(--accent); }
+.status-pill.is-err .status-value { color: var(--error); }
+.status-pill.is-warn .status-value { color: var(--warning); }
+
+/* ═══════════════════════════
+   Buttons
+═══════════════════════════ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-1);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  height: 32px;
+  padding: 0 var(--sp-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  transition: background-color var(--trans-fast), color var(--trans-fast), border-color var(--trans-fast);
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.btn-primary {
+  background-color: var(--accent);
+  color: #0d1117;
+  border-color: var(--accent);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #4ac95f;
+  border-color: #4ac95f;
+}
+
+.btn-primary:active:not(:disabled) {
+  background-color: #389e46;
+}
+
+.btn-primary:disabled {
+  background-color: var(--border);
+  color: var(--text-faint);
+  border-color: var(--border);
+}
+
+.btn-danger {
+  background-color: var(--error);
+  color: #fff;
+  border-color: var(--error);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: #ff6b63;
+  border-color: #ff6b63;
+}
+
+.btn-danger:active:not(:disabled) {
+  background-color: #c7382f;
+}
+
+.btn-secondary {
+  background-color: var(--surface-raised);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--border);
+}
+
+.btn-ghost {
+  background-color: transparent;
+  color: var(--text-muted);
+  border-color: transparent;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  color: var(--text-primary);
+  background-color: var(--surface-raised);
+  border-color: var(--border);
+}
+
+.btn--small {
+  height: 26px;
+  font-size: 11px;
+  padding: 0 var(--sp-2);
+}
+
+/* ═══════════════════════════
+   Panels
+═══════════════════════════ */
+.panel {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-5);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sp-4);
+  gap: var(--sp-2);
+}
+
+.panel-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ═══════════════════════════
+   Config Panel Blocks
+═══════════════════════════ */
+.config-block {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: var(--sp-4);
+  margin-top: var(--sp-4);
+}
+
+.config-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sp-3);
+}
+
+.config-block-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Provider chips */
+.provider-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  min-height: 32px;
+}
+
+.empty-hint {
+  font-size: 12px;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+}
+
+/* Each chip is a label wrapping a checkbox — fully keyboard operable (R-32) */
+.provider-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 4px var(--sp-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  background-color: var(--bg);
+  cursor: pointer;
+  transition: border-color var(--trans-fast), color var(--trans-fast), background-color var(--trans-fast);
+  user-select: none;
+}
+
+.provider-chip input[type="checkbox"] {
+  appearance: none;
+  width: 0;
+  height: 0;
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.provider-chip:hover {
+  border-color: var(--text-muted);
+  color: var(--text-primary);
+}
+
+.provider-chip.is-checked {
+  border-color: var(--brand);
+  color: var(--brand);
+  background-color: rgba(88, 166, 255, 0.08);
+}
+
+.provider-chip:has(input:focus-visible) {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.chip-count {
+  font-size: 10px;
+  color: inherit;
+  opacity: 0.7;
+}
+
+/* Select-all checkbox */
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: 12px;
+  color: var(--text-muted);
+  user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background-color: var(--bg);
+  display: grid;
+  place-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color var(--trans-fast), border-color var(--trans-fast);
+}
+
+.checkbox-label input[type="checkbox"]:checked {
+  background-color: var(--brand);
+  border-color: var(--brand);
+}
+
+.checkbox-label input[type="checkbox"]:checked::after {
+  content: '';
+  width: 8px;
+  height: 5px;
+  border-left: 1.5px solid #fff;
+  border-bottom: 1.5px solid #fff;
+  transform: rotate(-45deg) translateY(-1px);
+  display: block;
+}
+
+.checkbox-label input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.checkbox-custom { display: none; } /* Hidden, real checkbox used above */
+
+/* ═══════════════════════════
+   Circuit Breaker Controls
+═══════════════════════════ */
+.circuit-breaker-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--sp-5);
+}
+
+/* Toggle switch (role="switch") */
+.toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  user-select: none;
+}
+
+.toggle-label input[type="checkbox"] {
+  /* Visually hidden, accessible via toggle-track below */
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-track {
+  display: flex;
+  align-items: center;
+  width: 36px;
+  height: 20px;
+  background-color: var(--border);
+  border-radius: 10px;
+  padding: 2px;
+  transition: background-color var(--trans-fast);
+  cursor: pointer;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.toggle-label input:checked + .toggle-track {
+  background-color: var(--warning);
+  border-color: var(--warning);
+}
+
+.toggle-thumb {
+  width: 14px;
+  height: 14px;
+  background-color: var(--text-primary);
+  border-radius: 50%;
+  transition: transform var(--trans-fast);
+  flex-shrink: 0;
+}
+
+.toggle-label input:checked + .toggle-track .toggle-thumb {
+  transform: translateX(16px);
+}
+
+.toggle-label input:focus-visible + .toggle-track {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.toggle-text {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--text-muted);
+  min-width: 24px;
+}
+
+.toggle-label input:checked ~ .toggle-text {
+  color: var(--warning);
+}
+
+.threshold-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* ═══════════════════════════
+   Scan Action Buttons
+═══════════════════════════ */
+.scan-actions {
+  display: flex;
+  gap: var(--sp-3);
+  margin-top: var(--sp-5);
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.btn-primary { min-width: 120px; }
+.btn-danger  { min-width: 120px; }
+
+/* ═══════════════════════════
+   Execution Panel — Stats
+═══════════════════════════ */
+.stat-row {
+  display: flex;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-3);
+}
+
+.stat-card {
+  background-color: var(--bg);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-2) var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 72px;
+}
+
+.stat-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.stat-card--ok  .stat-value { color: var(--accent); }
+.stat-card--err .stat-value { color: var(--error); }
+.stat-card--warn .stat-value { color: var(--warning); }
+
+/* ═══════════════════════════
+   Progress Bar
+═══════════════════════════ */
+.progress-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+}
+
+.progress-bar-track {
+  flex: 1;
+  height: 6px;
+  background-color: var(--bg);
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background-color: var(--accent);
+  border-radius: 3px;
+  transition: width 200ms ease;
+  /* width is set inline via JS */
+}
+
+.progress-label {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  white-space: nowrap;
+  min-width: 56px;
+  text-align: right;
+}
+
+/* ═══════════════════════════
+   Terminal Log
+═══════════════════════════ */
+.terminal-log {
+  background-color: var(--bg);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-3);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.7;
+  max-height: 380px;
+  overflow-y: auto;
+  overflow-x: auto;
+  white-space: pre;
+  tab-size: 2;
+  /* Custom scrollbar for consistency */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) var(--bg);
+}
+
+.terminal-log::-webkit-scrollbar        { width: 6px; height: 6px; }
+.terminal-log::-webkit-scrollbar-track  { background: var(--bg); }
+.terminal-log::-webkit-scrollbar-thumb  { background-color: var(--border); border-radius: 3px; }
+
+.log-line {
+  display: block;
+  white-space: pre;
+}
+
+.log-line--ok    { color: var(--accent); }
+.log-line--err   { color: var(--error); }
+.log-line--warn  { color: var(--warning); }
+.log-line--info  { color: var(--brand); }
+.log-line--muted { color: var(--text-faint); }
+
+/* ═══════════════════════════
+   Recap Panel
+═══════════════════════════ */
+.recap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--sp-4);
+}
+
+.recap-card {
+  background-color: var(--bg);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-4);
+}
+
+.recap-card--err {
+  border-color: rgba(248, 81, 73, 0.3);
+}
+
+.recap-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sp-3);
+  gap: var(--sp-2);
+}
+
+.recap-card-title {
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.recap-badge {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--accent);
+  background-color: rgba(63, 185, 80, 0.1);
+  border: 1px solid rgba(63, 185, 80, 0.3);
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+}
+
+/* Model list in recap cards */
+.model-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 240px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) var(--bg);
+}
+
+.model-list::-webkit-scrollbar       { width: 4px; }
+.model-list::-webkit-scrollbar-track { background: var(--bg); }
+.model-list::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 2px; }
+
+.model-list li {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-primary);
+  padding: 2px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.model-list li:last-child { border-bottom: none; }
+
+.model-list__empty {
+  color: var(--text-faint) !important;
+  font-style: italic;
+}
+
+.model-list li.is-active    { color: var(--accent); }
+.model-list li.is-skipped   { color: var(--warning); }
+.model-list li.is-failed    { color: var(--error); }
+
+/* ═══════════════════════════
+   Site Footer
+═══════════════════════════ */
+.site-footer {
+  background-color: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: var(--sp-3) var(--sp-6);
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-faint);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.footer-sep { color: var(--border); }
+
+/* ═══════════════════════════
+   Utility
+═══════════════════════════ */
+.hidden {
+  display: none !important;
+}
+
+/* ═══════════════════════════
+   Responsive — Tablet / Mobile (R-03)
+═══════════════════════════ */
+@media (max-width: 768px) {
+  .site-header {
+    height: auto;
+    flex-wrap: wrap;
+    padding: var(--sp-3) var(--sp-4);
+    gap: var(--sp-3);
+    position: static;
+  }
+
+  /* Restore hints to visible on mobile where vertical space exists */
+  .site-header .field-hint {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+
+  .header-config {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: var(--sp-3);
+    flex-wrap: wrap;
+  }
+
+  .header-status {
+    order: -1;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .field-group {
+    min-width: 0;
+    width: 100%;
+  }
+
+  #main-content {
+    padding: var(--sp-3) var(--sp-3);
+  }
+
+  .panel {
+    padding: var(--sp-4);
+  }
+
+  .stat-row {
+    gap: var(--sp-2);
+  }
+
+  .stat-card {
+    min-width: 60px;
+  }
+
+  .stat-value {
+    font-size: 16px;
+  }
+
+  .circuit-breaker-controls {
+    flex-direction: column;
+    gap: var(--sp-3);
+  }
+
+  .scan-actions {
+    flex-direction: column;
+  }
+
+  .btn-primary,
+  .btn-danger {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .recap-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .brand-subtitle { display: none; }
+  .header-status  { gap: var(--sp-1); }
+
+  .stat-card {
+    flex: 1 1 40%;
+  }
+}
+
+/* ═══════════════════════════
+   Reduced Motion (R-39)
+═══════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+  }
+  .progress-bar-fill {
+    transition: none;
+  }
+}
