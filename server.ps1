@@ -320,10 +320,43 @@ function Handle-ScanSingle {
     }
 }
 
+# --- Release port if already occupied ---
+# Extract the port number from the prefix and kill any process holding it,
+# so re-running the script after a crash never fails with "conflicts with an
+# existing registration".
+$portMatch = [regex]::Match($ListenPrefix, ':(\d+)/')
+if ($portMatch.Success) {
+    $port = $portMatch.Groups[1].Value
+    $occupied = netstat -ano | Select-String "TCP\s+[^\s]+:$port\s+[^\s]+\s+LISTENING"
+    if ($occupied) {
+        # Parse the PID from the last column of each matching line
+        $pids = $occupied | ForEach-Object {
+            ($_.Line -split '\s+') | Select-Object -Last 1
+        } | Sort-Object -Unique
+        foreach ($pid in $pids) {
+            try {
+                Stop-Process -Id $pid -Force -ErrorAction Stop
+                Write-Host "[info] Released port $port (killed PID $pid)" -ForegroundColor DarkYellow
+            } catch {
+                Write-Host "[warn] Could not kill PID $pid on port $port`: $($_.Exception.Message)" -ForegroundColor DarkYellow
+            }
+        }
+        # Give the OS a moment to free the socket before binding
+        Start-Sleep -Milliseconds 500
+    }
+}
+
 # --- Main Server Loop ---
 $listener = New-Object System.Net.HttpListener
 $listener.Prefixes.Add($ListenPrefix)
-$listener.Start()
+
+try {
+    $listener.Start()
+} catch {
+    Write-Host "[fatal] Could not start listener on $ListenPrefix`: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "        Try running PowerShell as Administrator, or choose a different port with -ListenPrefix." -ForegroundColor Yellow
+    exit 1
+}
 
 Write-Host "9Router Scanner Web UI running at $ListenPrefix" -ForegroundColor Green
 Write-Host "Serving files from: $ScriptDir" -ForegroundColor Cyan
@@ -393,6 +426,10 @@ try {
     }
 }
 finally {
-    $listener.Stop()
+    # Only call Stop/Close if the listener was actually started
+    if ($listener.IsListening) {
+        try { $listener.Stop() } catch {}
+    }
+    try { $listener.Close() } catch {}
     Write-Host "Server stopped." -ForegroundColor Yellow
 }
